@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "esy x gentype.exe --version",
-    "clean": "dune clean -p #{self.name}"
+    "clean": "dune clean -p #{self.name}",
+    "docs": "echo 'no docs to generate'"
   },
   "esy": {
     "build": "dune build -p #{self.name}",
