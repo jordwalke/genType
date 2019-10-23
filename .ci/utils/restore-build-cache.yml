@@ -40,6 +40,7 @@ steps:
             echo "No latest artifact for merge-target branch found at URL $REST_ART"
           else
             curl "$LATEST_ART_URL" > "${BUILD_STAGINGDIRECTORY}/$ART_NAME.zip"
+            PROJECT_DIR=$PWD
             cd $BUILD_STAGINGDIRECTORY
             unzip "$ART_NAME.zip"
             echo "Using Dependency cache for buildID: $LATEST_BUILD_ID"
@@ -48,24 +49,19 @@ steps:
             echo "Build artifact from build that produced the cache: $LATEST_ART_URL"
             echo "Restoring build cache into:"
             mkdir -p $ESY__CACHE_INSTALL_PATH
-            if [ "$AGENT_OS" == "Windows_NT" ]; then
-              # tar on windows sees staging directory is D:/ as remote host.
-              # need to convert it to unix ironically
-              # not sure why single quotes are needed.
-              STAGE_DIR=$( cygpath --unix ${BUILD_STAGINGDIRECTORY} )
-            else
-              STAGE_DIR="${BUILD_STAGINGDIRECTORY}"
-            fi
             echo $ESY__CACHE_INSTALL_PATH
-            echo $STAGE_DIR
-            cd $STAGE_DIR
-            if [ -d _export ]; then
+            if [[ -d ${ART_NAME}/_export ]]; then
               echo "Cached builds to import"
-              ls _export
-              esy import-dependencies ./_export
+              ls ${ART_NAME}/_export
+              cd $PROJECT_DIR
+              # import-build allows importing before esy install runs.
+              # unlike import-dependencies
+              esy import-build ${BUILD_STAGINGDIRECTORY}/${ART_NAME}/_export/*
             else
               echo "No _export directory to import from build cache"
-              ls $STAGE_DIR
+              ls $BUILD_STAGINGDIRECTORY
+              ls .
+              cd $PROJECT_DIR
             fi
           fi
         }
